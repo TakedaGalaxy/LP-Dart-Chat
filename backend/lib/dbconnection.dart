@@ -8,7 +8,6 @@ class DBConnection {
     try {
       _db = sqlite3.openInMemory();
       _createUser();
-      _createMessage();
     } catch (err) {
       print('Error: $err');
       return;
@@ -24,25 +23,9 @@ class DBConnection {
       ''');
   }
 
-  void _createMessage() {
-    _db.execute('''
-      CREATE TABLE Message(
-        user VARCHAR(50) NOT NULL,
-        timestamp VARCHAR(50) NOT NULL,
-        type VARCHAR(50) NOT NULL,
-        text VARCHAR(50) NOT NULL
-      );
-      ''');
-  }
-
   void insertUser(User user) {
     _db.execute('INSERT INTO User(name, password) VALUES(?, ?)',
         [user.name, user.password]);
-  }
-
-  void updateUserPassword(User user) {
-    _db.execute('UPDATE User SET password = ? WHERE user = ?',
-        [user.password, user.name]);
   }
 
   User selectUser(String user) {
