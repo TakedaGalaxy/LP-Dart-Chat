@@ -8,6 +8,7 @@ class DBConnection {
     try {
       _db = sqlite3.openInMemory();
       _createUser();
+      _createMessage();
     } catch (err) {
       print('Error: $err');
       return;
@@ -19,6 +20,19 @@ class DBConnection {
       CREATE TABLE User(
         name VARCHAR(50) PRIMARY KEY,
         password VARCHAR(50) NOT NULL
+      );
+      ''');
+  }
+
+  void _createMessage() {
+    _db.execute('''
+      CREATE TABLE Message(
+        user VARCHAR(50) NOT NULL,
+        timestamp VARCHAR(20) NOT NULL,
+        type VARCHAR(20) NOT NULL,
+        body VARCHAR(100) NOT NULL,
+        PRIMARY KEY(user, timestamp),
+        FOREIGN KEY (user) REFERENCES User(name)
       );
       ''');
   }

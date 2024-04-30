@@ -1,63 +1,60 @@
+import 'dart:convert';
+
 enum MessageType { text, image }
 
 String messageTypeToString(MessageType type) {
   switch (type) {
     case MessageType.text:
-      return "text";
+      return 'text';
     case MessageType.image:
-      return "image";
+      return 'image';
     default:
-      throw Exception("Tipo de mensagem inválido");
+      throw ArgumentError("Tipo de mensagem inválida");
   }
 }
 
-MessageType messageTypeFromString(String type) {
-  switch (type) {
-    case "test":
+MessageType messageTypeFromString(String messageType) {
+  switch (messageType) {
+    case 'text':
       return MessageType.text;
-    case "image":
+    case 'image':
       return MessageType.image;
     default:
-      throw Exception("Tipo de mensagem inválido");
+      throw ArgumentError("Tipo de mensagem inválida");
   }
 }
 
 class Message {
-  late String _user, _text;
+  late String _user, _body;
   late MessageType _type;
   late DateTime _timestamp;
 
-  Message(String user, MessageType type, String text) {
-    if (user == "") throw FormatException("Nome de usuário inválido");
+  Message(this._user, this._timestamp, this._type, this._body);
 
-    _user = user;
-    _text = text;
-    _type = type;
-    _timestamp = DateTime.now();
+  Message.fromJSON(String json) {
+    var instance = jsonDecode(json);
+    _user = instance[0]['user'];
+    _timestamp = DateTime((instance[0]['timestamp']));
+    _type = messageTypeFromString(instance[0]['type']);
+    _body = instance[0]['body'];
   }
 
   String get user => _user;
-  String get text => _text;
-  MessageType get type => _type;
   DateTime get timestamp => _timestamp;
+  MessageType get type => _type;
+  String get body => _body;
 
-  set user(String user) {
-    if (user == "") throw FormatException("Nome de usuário inválido");
+  set user(String user) => _user = user;
+  set timestamp(DateTime timestamp) => _timestamp = timestamp;
+  set type(MessageType type) => _type = type;
+  set body(String body) => _body = body;
 
-    _user = user;
-  }
-
-  set text(String text) {
-    if (text == "") throw FormatException("Texto inválido");
-
-    _text = text;
-  }
-
-  set type(MessageType type) {
-    _type = type;
-  }
-
-  set timestamp(DateTime unixepoch) {
-    _timestamp = unixepoch;
+  String toJSON() {
+    return jsonEncode([
+      {'user': _user},
+      {'timestamp': _timestamp.toString()},
+      {'type': messageTypeToString(_type)},
+      {'body': _body},
+    ]);
   }
 }

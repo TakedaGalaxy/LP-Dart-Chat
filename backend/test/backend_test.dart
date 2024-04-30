@@ -1,52 +1,53 @@
-import 'package:backend/dbconnection.dart';
 import 'package:backend/user.dart';
+import 'package:backend/message.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('User', () {
     User user = User('teste', '123mudar');
 
-    test('Construtor de usuário JSON', () {
-      User userJson =
-          User.fromJSON('[{"name":"TesteJSON","password":"123mudar"}]');
-      expect(userJson.name, 'TesteJSON');
-      expect(userJson.password, '123mudar');
-    });
-
-    test('Usuário deveria ser criado normalmente', () {
+    test('Construtor do usuário', () {
       expect(user.name, 'teste');
       expect(user.password, '123mudar');
     });
 
-    test('Usuário deveria ser atualizado normalmente', () {
+    test('Setters de usuário', () {
       user.name = "Testado";
       expect(user.name, 'Testado');
       expect(user.password, '123mudar');
     });
 
-    test('Usuário deveria ser serializado normalmente', () {
+    test('Serialização de JSON', () {
       expect('[{"name":"Testado"},{"password":"123mudar"}]', user.toJSON());
+    });
+
+    test('Construtor JSON', () {
+      User userJson =
+          User.fromJSON('[{"name":"TesteJSON","password":"123mudar"}]');
+      expect(userJson.name, 'TesteJSON');
+      expect(userJson.password, '123mudar');
     });
   });
 
-  group('DBConnection', () {
-    late DBConnection dbConnection;
+  group('Message', () {
+    DateTime date = DateTime(-14182916000000);
+    Message message = Message('teste', date, MessageType.text, "Mensagem");
 
-    setUp(() {
-      dbConnection = DBConnection();
+    test('Construtor comum', () {
+      expect(message.user, "teste");
+      expect(message.timestamp, date);
+      expect(messageTypeToString(message.type), "text");
+      expect(message.body, "Mensagem");
     });
 
-    test('insertUser should add a new user to the database', () {
-      // Arrange
-      final user = User("test\\_u'se'r", "password123");
+    test('Construtor de usuário JSON', () {
+      Message messageJson = Message.fromJSON(
+          '[{"user":"TesteJSON","timestamp":-14182916000000,"type":"text","body":"Mensagem"}]');
 
-      // Act
-      dbConnection.insertUser(user);
-
-      // Assert
-      final selectedUser = dbConnection.selectUser(user.name);
-      expect(selectedUser.name, user.name);
-      expect(selectedUser.password, user.password);
+      expect(messageJson.user, "TesteJSON");
+      expect(messageJson.timestamp, date);
+      expect(messageTypeToString(messageJson.type), "text");
+      expect(messageJson.body, "Mensagem");
     });
   });
 }
