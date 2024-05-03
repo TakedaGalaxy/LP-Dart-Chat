@@ -24,6 +24,18 @@ class DBConnection {
       ''');
   }
 
+  void _createUserToken() {
+    _db.execute('''
+      CREATE TABLE User(
+        user VARCHAR(50),
+        tokeid VARCHAR(100) NOT NULL,
+        revoke INTEGER NOT NULL,
+        PRIMARY KEY(user, tokeid),
+        FOREIGN KEY (user) REFERENCES User(name)
+      );
+      ''');
+  }
+
   void _createMessage() {
     _db.execute('''
       CREATE TABLE Message(

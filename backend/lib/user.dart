@@ -51,8 +51,7 @@ class User {
 
   String toJSON() {
     return jsonEncode([
-      {'name': _name},
-      {'password': _password}
+      {'name': _name, 'password': _password}
     ]);
   }
 }

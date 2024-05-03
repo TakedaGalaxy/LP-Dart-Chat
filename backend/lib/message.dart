@@ -51,10 +51,12 @@ class Message {
 
   String toJSON() {
     return jsonEncode([
-      {'user': _user},
-      {'timestamp': _timestamp.toString()},
-      {'type': messageTypeToString(_type)},
-      {'body': _body},
+      {
+        'user': _user,
+        'timestamp': _timestamp.toString(),
+        'type': messageTypeToString(_type),
+        'body': _body
+      },
     ]);
   }
 }

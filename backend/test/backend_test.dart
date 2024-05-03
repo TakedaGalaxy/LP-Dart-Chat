@@ -18,7 +18,7 @@ void main() {
     });
 
     test('Serialização de JSON', () {
-      expect('[{"name":"Testado"},{"password":"123mudar"}]', user.toJSON());
+      expect('[{"name":"Testado","password":"123mudar"}]', user.toJSON());
     });
 
     test('Construtor JSON', () {
