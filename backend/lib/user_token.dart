@@ -22,7 +22,7 @@ class UserToken {
     var instance = jsonDecode(json);
     var user = instance[0]['user'];
     var tokeid = instance[0]['tokeid'];
-    var revoke = int.parse(instance[0]['revoke']);
+    var revoke = instance[0]['revoke'];
 
     if (user == "" || user.length > 20) {
       throw Exception("Usuário inválido");
@@ -32,8 +32,8 @@ class UserToken {
       throw Exception("Token inválido");
     }
 
-    if (revoke != 0 || revoke != 1) {
-      throw Exception("Revoke com valor inválido");
+    if (revoke != 0 && revoke != 1) {
+      throw Exception("Revoke com valor inválido: $revoke");
     }
 
     _user = user;
@@ -62,7 +62,7 @@ class UserToken {
   }
 
   set revoke(int revoke) {
-    if (revoke != 0 || revoke != 1) {
+    if (revoke != 0 && revoke != 1) {
       throw Exception("Revoke inválido");
     }
 
