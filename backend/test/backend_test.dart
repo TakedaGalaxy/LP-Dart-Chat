@@ -1,31 +1,35 @@
+import "dart:convert";
 import 'package:backend/user.dart';
 import 'package:backend/message.dart';
 import 'package:test/test.dart';
+import 'package:crypto/crypto.dart';
 
 void main() {
   group('User', () {
     User user = User('teste', '123mudar');
+    var bytes = utf8.encode('123mudar');
+    var pass = sha256.convert(bytes).toString();
 
     test('Construtor do usuário', () {
       expect(user.name, 'teste');
-      expect(user.password, '123mudar');
+      expect(user.password, pass);
     });
 
     test('Setters de usuário', () {
       user.name = "Testado";
       expect(user.name, 'Testado');
-      expect(user.password, '123mudar');
+      expect(user.password, pass);
     });
 
     test('Serialização de JSON', () {
-      expect('[{"name":"Testado","password":"123mudar"}]', user.toJSON());
+      expect('[{"name":"Testado","password":"$pass"}]', user.toJSON());
     });
 
     test('Construtor JSON', () {
       User userJson =
           User.fromJSON('[{"name":"TesteJSON","password":"123mudar"}]');
       expect(userJson.name, 'TesteJSON');
-      expect(userJson.password, '123mudar');
+      expect(userJson.password, pass);
     });
   });
 
