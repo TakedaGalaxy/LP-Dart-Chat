@@ -1,5 +1,6 @@
 import 'package:sqlite3/sqlite3.dart';
 import 'user.dart';
+import 'user_token.dart';
 
 class DBConnection {
   late Database _db;
@@ -8,7 +9,7 @@ class DBConnection {
     try {
       _db = sqlite3.openInMemory();
       _createUser();
-      _createMessage();
+      _createUserToken();
     } catch (err) {
       print('Error: $err');
       return;
@@ -36,35 +37,49 @@ class DBConnection {
       ''');
   }
 
-  void _createMessage() {
-    _db.execute('''
-      CREATE TABLE Message(
-        user VARCHAR(50) NOT NULL,
-        timestamp VARCHAR(20) NOT NULL,
-        type VARCHAR(20) NOT NULL,
-        body VARCHAR(100) NOT NULL,
-        PRIMARY KEY(user, timestamp),
-        FOREIGN KEY (user) REFERENCES User(name)
-      );
-      ''');
-  }
-
-  void insertUser(User user) {
+  void createUser(User user) {
     _db.execute('INSERT INTO User(name, password) VALUES(?, ?)',
         [user.name, user.password]);
   }
 
-  User selectUser(String user) {
-    if (user == "") throw FormatException("Usuário inválido");
+  void createUserToken(UserToken userToken) {
+    _db.execute('INSERT INTO UserToken(user, tokeid, revoke) VALUES(?, ?, ?)',
+        [userToken.user, userToken.tokeid, userToken.revoke]);
+  }
+
+  void logout(UserToken userToken) {
+    _db.execute(
+        'UPDATE UserToken SET revoke = 1 WHERE tokeid = ?', [userToken.tokeid]);
+  }
+
+  User getUserByName(String name) {
+    if (name == "" || name.length > 20) {
+      throw Exception("Usuároi inválido");
+    }
 
     final ResultSet set =
-        _db.select("SELECT * FROM User WHERE name = ?", [user]);
+        _db.select("SELECT * FROM User WHERE name = ?", [name]);
 
     if (set.isNotEmpty) {
       final Row row = set.first;
       return User(row['name'], row['password']);
-    } else {
-      throw Exception("Usuário não encontrado");
     }
+    throw Exception("Usuário não encontrado");
+  }
+
+  UserToken getUserTokenById(String tokeid) {
+    if (tokeid == "") {
+      throw Exception("Token inválido");
+    }
+
+    final ResultSet set =
+        _db.select("SELECT * FROM UserToken WHERE tokeid = ?", [tokeid]);
+
+    if (set.isNotEmpty) {
+      final Row row = set.first;
+      return UserToken(row['usuario'], row['tokeid'], row['revoke']);
+    }
+
+    throw Exception("Token não encontrado");
   }
 }

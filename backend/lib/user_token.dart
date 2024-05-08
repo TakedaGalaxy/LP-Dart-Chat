@@ -4,7 +4,7 @@ class UserToken {
   late String _user, _tokeid;
   late int _revoke;
 
-  UserToken(String user, String tokeid) {
+  UserToken(String user, String tokeid, [int revoke = 0]) {
     if (user == "" || user.length > 20) {
       throw Exception("Usuário inválido");
     }
@@ -15,7 +15,7 @@ class UserToken {
 
     _user = user;
     _tokeid = tokeid;
-    _revoke = 0;
+    _revoke = revoke;
   }
 
   UserToken.fromJSON(String json) {
