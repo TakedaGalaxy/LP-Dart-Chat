@@ -1,7 +1,7 @@
 import "dart:convert";
-import 'package:backend/user.dart';
-import 'package:backend/user_token.dart';
-import 'package:backend/message.dart';
+import 'package:backend/model/user.dart';
+import 'package:backend/model/user_token.dart';
+import 'package:backend/model/message.dart';
 import 'package:test/test.dart';
 import 'package:crypto/crypto.dart';
 

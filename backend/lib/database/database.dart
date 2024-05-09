@@ -1,17 +1,17 @@
 import 'package:sqlite3/sqlite3.dart';
-import 'user.dart';
-import 'user_token.dart';
+import '../model/user.dart';
+import '../model/user_token.dart';
 
-class DBConnection {
+class DatabaseConnection {
   late Database _db;
 
-  DBConnection() {
+  DatabaseConnection() {
     try {
       _db = sqlite3.openInMemory();
       _createUser();
       _createUserToken();
     } catch (err) {
-      print('Error: $err');
+      print("[DATABASE]: Erro em criar conexão ($err)");
       return;
     }
   }
@@ -37,23 +37,23 @@ class DBConnection {
       ''');
   }
 
-  void createUser(User user) {
+  void createUser(ModelUser user) {
     _db.execute('INSERT INTO User(name, password) VALUES(?, ?)',
         [user.name, user.password]);
   }
 
-  void createUserToken(UserToken userToken) {
+  void createUserToken(ModelUserToken userToken) {
     _db.execute(
-        'UPDATE UserToken SET revoke = 1 WHERE user = ?', [userToken.user]);
+        'UPDATE UserToken SET revoke = 1 WHERE user = ?', [userToken.userName]);
     _db.execute('INSERT INTO UserToken(user, tokeid, revoke) VALUES(?, ?, ?)',
-        [userToken.user, userToken.tokeid, userToken.revoke]);
+        [userToken.userName, userToken.tokeid, userToken.revoke]);
   }
 
   void revokeUserToken(String tokeid) {
     _db.execute('UPDATE UserToken SET revoke = 1 WHERE tokeid = ?', [tokeid]);
   }
 
-  User getUserByName(String name) {
+  ModelUser getUserByName(String name) {
     if (name == "" || name.length > 20) {
       throw Exception("Usuároi inválido");
     }
@@ -63,12 +63,12 @@ class DBConnection {
 
     if (set.isNotEmpty) {
       final Row row = set.first;
-      return User(row['name'], row['password']);
+      return ModelUser(row['name'], row['password']);
     }
     throw Exception("Usuário não encontrado");
   }
 
-  UserToken getUserTokenById(String tokeid) {
+  ModelUserToken getUserTokenById(String tokeid) {
     if (tokeid == "") {
       throw Exception("Token inválido");
     }
@@ -78,7 +78,7 @@ class DBConnection {
 
     if (set.isNotEmpty) {
       final Row row = set.first;
-      return UserToken(row['usuario'], row['tokeid'], row['revoke']);
+      return ModelUserToken(row['usuario'], row['tokeid'], row['revoke']);
     }
 
     throw Exception("Token não encontrado");

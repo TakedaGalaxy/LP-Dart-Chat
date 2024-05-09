@@ -1,10 +1,10 @@
 import "dart:convert";
-import 'package:crypto/crypto.dart';
+import 'package:backend/utils/utils.dart';
 
-class User {
+class ModelUser {
   late String _name, _password;
 
-  User(String name, String password) {
+  ModelUser(String name, String password) {
     if (name == "" || name.length > 20) {
       throw FormatException("Nome de usuário inválido");
     }
@@ -14,13 +14,13 @@ class User {
     }
 
     _name = name;
-    _password = _hashPassword(password);
+    _password = hashString(password);
   }
 
-  User.fromJSON(String json) {
-    var instance = jsonDecode(json);
-    var name = instance[0]['name'];
-    var password = instance[0]['password'];
+  ModelUser.fromJsonString(String str) {
+    final instance = jsonDecode(str);
+    final name = instance['name'];
+    final password = instance['password'];
 
     if (name == "" || name.length > 20) {
       throw FormatException("Nome de usuário inválido");
@@ -31,17 +31,11 @@ class User {
     }
 
     _name = name;
-    _password = _hashPassword(password);
+    _password = hashString(password);
   }
 
   String get name => _name;
   String get password => _password;
-
-  String _hashPassword(String password) {
-    var bytes = utf8.encode(password);
-    var digest = sha256.convert(bytes);
-    return digest.toString();
-  }
 
   set name(String name) {
     if (name == "" || name.length > 20) {
@@ -56,12 +50,10 @@ class User {
       throw FormatException("Senha inválida");
     }
 
-    _password = _hashPassword(password);
+    _password = hashString(password);
   }
 
-  String toJSON() {
-    return jsonEncode([
-      {'name': _name, 'password': _password}
-    ]);
+  Map<String, dynamic> toJson() {
+    return {'name': _name, 'password': _password};
   }
 }
