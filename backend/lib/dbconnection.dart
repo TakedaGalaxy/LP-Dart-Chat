@@ -43,13 +43,14 @@ class DBConnection {
   }
 
   void createUserToken(UserToken userToken) {
+    _db.execute(
+        'UPDATE UserToken SET revoke = 1 WHERE user = ?', [userToken.user]);
     _db.execute('INSERT INTO UserToken(user, tokeid, revoke) VALUES(?, ?, ?)',
         [userToken.user, userToken.tokeid, userToken.revoke]);
   }
 
-  void logout(UserToken userToken) {
-    _db.execute(
-        'UPDATE UserToken SET revoke = 1 WHERE tokeid = ?', [userToken.tokeid]);
+  void revokeUserToken(String tokeid) {
+    _db.execute('UPDATE UserToken SET revoke = 1 WHERE tokeid = ?', [tokeid]);
   }
 
   User getUserByName(String name) {
