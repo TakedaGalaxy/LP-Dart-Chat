@@ -1,3 +1,4 @@
+import 'package:backend/database/database.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
@@ -7,12 +8,16 @@ import 'package:backend/router/user.dart';
 import 'package:backend/router/websocket.dart';
 
 void main() async {
+  // ### Criando instancia do banco de dados ###
+  final databaseConnection = DatabaseConnection();
+  //  ### END ###
+
   // ### Configurando serviço ###
   final routerMain = Router();
 
   routerMain.get("/", (Request request) => Response.ok("Servidor rodando !"));
 
-  routerMain.mount("/user", routerUser().call);
+  routerMain.mount("/user", routerUser(databaseConnection).call);
   routerMain.mount("/auth", routerAuth().call);
   routerMain.mount("/websocket", routerWebsocket().call);
 
