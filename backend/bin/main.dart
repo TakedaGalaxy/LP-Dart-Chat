@@ -1,42 +1,28 @@
-import 'package:backend/router/auth.dart';
-import 'package:backend/router/user.dart';
-import 'package:backend/router/websocket.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
+import 'package:backend/middleware/cors.dart';
+import 'package:backend/router/auth.dart';
+import 'package:backend/router/user.dart';
+import 'package:backend/router/websocket.dart';
 
 void main() async {
-  final app = Router();
+  // ### Configurando serviço ###
+  final routerMain = Router();
 
-  app.get("/", (Request request) => Response.ok("Servidor rodando !"));
+  routerMain.get("/", (Request request) => Response.ok("Servidor rodando !"));
 
-  app.mount("/user", routerUser().call);
-  app.mount("/auth", routerAuth().call);
-  app.mount("/websocket", routerWebsocket().call);
+  routerMain.mount("/user", routerUser().call);
+  routerMain.mount("/auth", routerAuth().call);
+  routerMain.mount("/websocket", routerWebsocket().call);
 
   final handler = const Pipeline()
-      .addMiddleware(corsHeaders())
+      .addMiddleware(middlewareCors())
       .addMiddleware(logRequests())
-      .addHandler(app.call);
+      .addHandler(routerMain.call);
 
   final server = await shelf_io.serve(handler, 'localhost', 8080);
-  
-  print('Servidor rodando em http://${server.address.host}:${server.port}');
-}
 
-Middleware corsHeaders() {
-  return (Handler innerHandler) {
-    return (Request request) async {
-      var response = await innerHandler(request);
-      response = response.change(headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers':
-            'Origin, Content-Type, Accept, Authorization',
-        'Access-Control-Allow-Credentials': 'true',
-        'Access-Control-Max-Age': '86400',
-      });
-      return response;
-    };
-  };
+  print('Servidor rodando em http://${server.address.host}:${server.port}');
+  // ### END ###
 }
