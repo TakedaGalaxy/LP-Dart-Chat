@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dart Chat</title>
+</head>
+
+<body>
+  <div id="App"></div>
+  <script>
+    // ### Criando componentes ###
+
+    function StructureRouter(routes) {
+      console.log(routes);
+      const ref = document.createElement("div");
+
+      const setRoute = (routeName) => {
+        if (routes[routeName] === undefined) {
+          console.log(`Not found ${routeName}`)
+          return;
+        }
+
+        ref.innerHTML = "";
+        routes[routeName].forEach(children => ref.append(children));
+      };
+
+      return [ref, setRoute];
+    }
+
+    // ### Criando classes de controle ###
+
+    // ### Renderizando ###
+    const app = document.getElementById("App");
+
+    const [refRouter, setRoute] = StructureRouter({
+      "/": ["Pagina Home"],
+      "/sign-in": ["Pagina SignIn"],
+      "/log-in": ["Pagina Log In"],
+      "/log-out": ["Pagina Log Out"],
+      "/chat": ["Pagina Chat"],
+    });
+
+    app.append(refRouter);
+
+    setRoute("/");
+
+    // ### Definindo logica ###
+  </script>
+</body>
+
+</html>

@@ -9,6 +9,7 @@ Router routerWebsocket() {
   routerUser.mount("/", (Request request) {
     // Se não for HTTP, passa para o tratamento de WebSocket
     return webSocketHandler((WebSocketChannel webSocket) {
+
       webSocket.stream.listen((message) {
         // Recebeu uma mensagem do cliente WebSocket
         print('Mensagem do cliente WebSocket: $message');
