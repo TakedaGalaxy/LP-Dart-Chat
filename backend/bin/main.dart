@@ -18,7 +18,7 @@ void main() async {
   routerMain.get("/", (Request request) => Response.ok("Servidor rodando !"));
 
   routerMain.mount("/user", routerUser(databaseConnection).call);
-  routerMain.mount("/auth", routerAuth().call);
+  routerMain.mount("/auth", routerAuth(databaseConnection).call);
   routerMain.mount("/websocket", routerWebsocket().call);
 
   final handler = const Pipeline()

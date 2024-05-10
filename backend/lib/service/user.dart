@@ -1,6 +1,7 @@
 import 'package:backend/database/database.dart';
 import 'package:backend/model/user.dart';
 import 'package:backend/service/common.dart';
+import 'package:backend/utils/utils.dart';
 
 class ServiceUser {
   final DatabaseConnection databaseConnection;
@@ -10,6 +11,8 @@ class ServiceUser {
   Future<ServiceResponseMessage> create(String userJsonString) async {
     try {
       final user = ModelUser.fromJsonString(userJsonString);
+
+      user.password = hashString(user.password);
 
       databaseConnection.createUser(user);
 

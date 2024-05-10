@@ -1,8 +1,7 @@
-import 'package:backend/database/database.dart';
-import 'package:backend/model/user.dart';
-import 'package:backend/service/user.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
+import 'package:backend/database/database.dart';
+import 'package:backend/service/user.dart';
 
 Router routerUser(DatabaseConnection databaseConnection) {
   final serviceUser = ServiceUser(databaseConnection: databaseConnection);

@@ -14,7 +14,7 @@ class ModelUser {
     }
 
     _name = name;
-    _password = hashString(password);
+    _password = password;
   }
 
   ModelUser.fromJsonString(String str) {
@@ -31,7 +31,7 @@ class ModelUser {
     }
 
     _name = name;
-    _password = hashString(password);
+    _password = password;
   }
 
   String get name => _name;
@@ -50,7 +50,7 @@ class ModelUser {
       throw FormatException("Senha inválida");
     }
 
-    _password = hashString(password);
+    _password = password;
   }
 
   Map<String, dynamic> toJson() {
