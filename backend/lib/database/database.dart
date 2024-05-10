@@ -27,7 +27,7 @@ class DatabaseConnection {
 
   void _createUserToken() {
     _db.execute('''
-      CREATE TABLE User(
+      CREATE TABLE UserToken(
         user VARCHAR(50),
         tokeid VARCHAR(100) NOT NULL,
         revoke INTEGER NOT NULL,
