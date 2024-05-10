@@ -8,8 +8,8 @@ class ServiceResponseMessage {
 
   Map<String, dynamic> toJson() {
     return {
-      'success': success,
-      'message': message,
+      "success": success,
+      "message": message,
     };
   }
 
