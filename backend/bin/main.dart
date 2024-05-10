@@ -1,43 +1,42 @@
-import 'package:backend/model/user.dart';
+import 'package:backend/router/auth.dart';
+import 'package:backend/router/user.dart';
+import 'package:backend/router/websocket.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
-import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:shelf_router/shelf_router.dart';
 
 void main() async {
-  // Criando um servidor Shelf para lidar com requisições HTTP e WebSocket
-
   final app = Router();
 
-  app.get("/", (Request request) {
-    return Response.ok("Servidor rodando !");
-  });
+  app.get("/", (Request request) => Response.ok("Servidor rodando !"));
 
-  app.post("/user", (Request request) async {
-    ModelUser user = ModelUser.fromJsonString(await request.readAsString());
-    print(user.toJson().toString());
+  app.mount("/user", routerUser().call);
+  app.mount("/auth", routerAuth().call);
+  app.mount("/websocket", routerWebsocket().call);
 
-    return Response.ok("Servidor rodando !");
-  });
+  final handler = const Pipeline()
+      .addMiddleware(corsHeaders())
+      .addMiddleware(logRequests())
+      .addHandler(app.call);
 
-  app.all("/websocket", (Request request) {
-    // Se não for HTTP, passa para o tratamento de WebSocket
-    return webSocketHandler((WebSocketChannel webSocket) {
-      webSocket.stream.listen((message) {
-        // Recebeu uma mensagem do cliente WebSocket
-        print('Mensagem do cliente WebSocket: $message');
-
-        // Envia uma resposta de volta para o cliente WebSocket
-        webSocket.sink.add('Recebido: $message');
-      });
-    })(request);
-  });
-
-  final handler =
-      const Pipeline().addMiddleware(logRequests()).addHandler(app.call);
-
-  // Cria o servidor HTTP e WebSocket na mesma porta
   final server = await shelf_io.serve(handler, 'localhost', 8080);
+  
   print('Servidor rodando em http://${server.address.host}:${server.port}');
+}
+
+Middleware corsHeaders() {
+  return (Handler innerHandler) {
+    return (Request request) async {
+      var response = await innerHandler(request);
+      response = response.change(headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers':
+            'Origin, Content-Type, Accept, Authorization',
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Max-Age': '86400',
+      });
+      return response;
+    };
+  };
 }
