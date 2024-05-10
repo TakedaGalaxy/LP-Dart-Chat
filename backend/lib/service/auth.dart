@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:backend/database/database.dart';
 import 'package:backend/model/user.dart';
 import 'package:backend/model/user_token.dart';
+import 'package:backend/service/common.dart';
 import 'package:backend/utils/jwt.dart';
 import 'package:backend/utils/utils.dart';
 
@@ -12,9 +13,7 @@ class ServiceResponseLogIn {
   String accessToken;
 
   ServiceResponseLogIn(
-      {required this.success,
-      required this.message,
-      required this.accessToken});
+      {required this.success, this.message = "", this.accessToken = ""});
 
   Map<String, dynamic> toJson() {
     if (success) return {"sucess": success, "accessToken": accessToken};
@@ -41,7 +40,7 @@ class ServiceAuth {
 
       if (user.password != userTarget.password) {
         return ServiceResponseLogIn(
-            success: false, message: "Senha incorreta !", accessToken: "");
+            success: false, message: "Senha incorreta !");
       }
 
       int timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -53,11 +52,19 @@ class ServiceAuth {
 
       databaseConnection.createUserToken(ModelUserToken(user.name, tokenId));
 
-      return ServiceResponseLogIn(
-          success: true, message: "", accessToken: token);
+      return ServiceResponseLogIn(success: true, accessToken: token);
     } catch (error) {
       return ServiceResponseLogIn(
-          success: false, message: "Error logIn $error", accessToken: "");
+          success: false, message: "Error logIn $error");
     }
+  }
+
+  ServiceResponseMessage logOut(Map<String, Object> context) {
+    final tokenId = context["tokenId"] as String;
+
+    databaseConnection.revokeUserToken(tokenId);
+
+    return ServiceResponseMessage(
+        success: true, message: "Usuario deslogado !");
   }
 }

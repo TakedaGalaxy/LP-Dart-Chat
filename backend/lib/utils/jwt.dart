@@ -7,7 +7,7 @@ class PayloadAccessToken {
   final String tokenId;
 
   PayloadAccessToken({required this.userName, required this.tokenId});
-  
+
   Map<String, dynamic> toJson() {
     return {
       "userName": userName,
@@ -26,11 +26,12 @@ String generateAccessToken(PayloadAccessToken payload) {
   return jwt.sign(SecretKey("SEGREDO"));
 }
 
-void validateAccessToken(String token) {
+PayloadAccessToken decodeAccessToken(String token) {
   try {
     final jwt = JWT.verify(token, SecretKey("SEGREDO"));
 
-    print('Payload: ${jwt.payload}');
+    return PayloadAccessToken(
+        userName: jwt.payload["userName"], tokenId: jwt.payload["tokenId"]);
   } on JWTExpiredException {
     throw "Token expirado !";
   } on JWTException catch (_) {

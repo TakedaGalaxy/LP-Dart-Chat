@@ -75,10 +75,10 @@ class DatabaseConnection {
 
     final ResultSet set =
         _db.select("SELECT * FROM UserToken WHERE tokeid = ?", [tokeid]);
-
+        
     if (set.isNotEmpty) {
       final Row row = set.first;
-      return ModelUserToken(row['usuario'], row['tokeid'], row['revoke']);
+      return ModelUserToken(row['user'], row['tokeid'], row['revoke']);
     }
 
     throw Exception("Token não encontrado");

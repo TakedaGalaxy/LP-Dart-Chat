@@ -1,4 +1,5 @@
 import 'package:backend/database/database.dart';
+import 'package:backend/middleware/auth.dart';
 import 'package:backend/service/auth.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -16,9 +17,15 @@ Router routerAuth(DatabaseConnection databaseConnection) {
     return Response.internalServerError(body: response.toJsonString());
   });
 
-  routerAuth.delete("/", (Request request) async {
-    return Response.ok("Ok");
-  });
+  routerAuth.delete(
+      "/",
+      middlewareAuth(databaseConnection)((Request request) async {
+        final response = serviceAuth.logOut(request.context);
+
+        if (response.success) return Response.ok(response.toJsonString());
+
+        return Response.internalServerError(body: response.toJsonString());
+      }));
 
   return routerAuth;
 }

@@ -1,5 +1,4 @@
 import "dart:convert";
-import 'package:backend/utils/utils.dart';
 
 class ModelUser {
   late String _name, _password;
