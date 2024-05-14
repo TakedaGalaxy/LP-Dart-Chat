@@ -5,13 +5,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dart Chat</title>
+
+  <style>
+    .structure-full-page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .structure-full-page.center {
+      align-items: center;
+      justify-content: center;
+    }
+
+    .structure-flex {
+      display: flex;
+      gap: 15px;
+    }
+
+    .element-card {
+      box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+      padding: 30px 12px;
+      width: 400px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
   <div id="App"></div>
   <script>
     // ### Criando componentes ###
-
     function StructureRouter(routes) {
       console.log(routes);
       const ref = document.createElement("div");
@@ -29,13 +58,83 @@
       return [ref, setRoute];
     }
 
+    function StructureFullPage({ id, className, childrens, align }) {
+      const ref = document.createElement('div');
+      ref.id = id ?? "";
+      ref.className = `structure-full-page ${align} ${className}`
+
+      childrens.forEach(children => ref.append(children));
+
+      return ref;
+    }
+
+    function StructureSection({ id, className, children }) {
+      const ref = document.createElement('div');
+      ref.id = id ?? "";
+      ref.className = `structure-section ${className}`
+
+      ref.append(children);
+
+      return ref;
+    }
+
+    function StructureFlex({ id, className, direction, justifyContent, alignContent, childrens }) {
+      const ref = document.createElement("div");
+
+      ref.id = id;
+      ref.className = `structure-flex ${className}`;
+      ref.style.flexDirection = direction;
+      ref.style.justifyContent = justifyContent;
+      ref.style.alignContent = alignContent;
+
+      childrens.forEach((children) => ref.append(children));
+
+      return ref;
+    }
+
+    function ElementCard({ id, className, text, onClick }) {
+      const ref = document.createElement("div");
+
+      ref.id = id;
+      ref.className = `element-card ${className}`;
+
+      ref.append(
+        StructureFlex({ direction: "colum", justifyContent: "center", childrens: [text] })
+      );
+
+      ref.addEventListener("click", () => {
+        if (onClick) onClick();
+      });
+
+      return ref;
+    }
     // ### Criando classes de controle ###
 
     // ### Renderizando ###
     const app = document.getElementById("App");
 
+    const pageHome = [
+      StructureFullPage({
+        align: "center",
+        childrens: [
+          StructureFlex({
+            childrens: [
+              ElementCard({
+                text: "Log In",
+                onClick: () => setRoute("/log-in"),
+              }),
+              ElementCard({
+                text: "Sign In",
+                onClick: () => setRoute("/sign-in"),
+              }),
+            ]
+          })
+        ]
+      })
+    ]
+
     const [refRouter, setRoute] = StructureRouter({
-      "/": ["Pagina Home"],
+      "/": pageHome,
       "/sign-in": ["Pagina SignIn"],
       "/log-in": ["Pagina Log In"],
       "/log-out": ["Pagina Log Out"],
