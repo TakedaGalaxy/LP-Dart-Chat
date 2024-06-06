@@ -6,6 +6,7 @@ import 'package:backend/middleware/cors.dart';
 import 'package:backend/router/auth.dart';
 import 'package:backend/router/user.dart';
 import 'package:backend/router/websocket.dart';
+import 'package:shelf_static/shelf_static.dart';
 
 void main() async {
   // ### Criando instancia do banco de dados ###
@@ -15,11 +16,18 @@ void main() async {
   // ### Configurando serviço ###
   final routerMain = Router();
 
-  routerMain.get("/", (Request request) => Response.ok("Servidor rodando !"));
+  final staticHandler =
+      createStaticHandler('public', defaultDocument: 'index.html');
 
-  routerMain.mount("/user", routerUser(databaseConnection).call);
-  routerMain.mount("/auth", routerAuth(databaseConnection).call);
-  routerMain.mount("/websocket", routerWebsocket().call);
+  routerMain.get("/", (Request request) => staticHandler(request));
+
+  routerMain.mount("/api/user", routerUser(databaseConnection).call);
+  routerMain.mount("/api/auth", routerAuth(databaseConnection).call);
+  routerMain.mount("/api/websocket", routerWebsocket().call);
+
+  routerMain.get("/click", (Request request) {
+    return Response.ok('<p>You clicked the button!</p>');
+  });
 
   final handler = const Pipeline()
       .addMiddleware(middlewareCors())

@@ -12,6 +12,7 @@ Middleware middlewareCors() {
             'Origin, Content-Type, Accept, Authorization',
         'Access-Control-Allow-Credentials': 'true',
         'Access-Control-Max-Age': '86400',
+        
       });
       return response;
     };
