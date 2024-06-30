@@ -1,4 +1,5 @@
 import 'package:backend/database/database.dart';
+import 'package:backend/utils/utils.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
@@ -6,7 +7,6 @@ import 'package:backend/middleware/cors.dart';
 import 'package:backend/router/auth.dart';
 import 'package:backend/router/user.dart';
 import 'package:backend/router/websocket.dart';
-import 'package:shelf_static/shelf_static.dart';
 
 void main() async {
   // ### Criando instancia do banco de dados ###
@@ -16,18 +16,24 @@ void main() async {
   // ### Configurando serviço ###
   final routerMain = Router();
 
-  final staticHandler =
-      createStaticHandler('public', defaultDocument: 'index.html');
+  // ### Arquivos estaticos ###
 
-  routerMain.get("/", (Request request) => staticHandler(request));
+  routerMain.get(
+      "/",
+      (Request request) async =>
+          await getFile("public/index.html", "text/html"));
 
-  routerMain.mount("/api/user", routerUser(databaseConnection).call);
-  routerMain.mount("/api/auth", routerAuth(databaseConnection).call);
-  routerMain.mount("/api/websocket", routerWebsocket().call);
+  routerMain.get("/style.css",
+      (Request request) async => await getFile("public/style.css", "text/css"));
 
-  routerMain.get("/click", (Request request) {
-    return Response.ok('<p>You clicked the button!</p>');
-  });
+  routerMain.get("/main.js",
+      (Request request) async => await getFile("public/main.js", "text/js"));
+
+  // ### Adicionando rotas ###
+
+  routerMain.mount("/user", routerUser(databaseConnection).call);
+  routerMain.mount("/auth", routerAuth(databaseConnection).call);
+  routerMain.mount("/websocket", routerWebsocket().call);
 
   final handler = const Pipeline()
       .addMiddleware(middlewareCors())

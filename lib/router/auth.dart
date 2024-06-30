@@ -9,8 +9,11 @@ Router routerAuth(DatabaseConnection databaseConnection) {
 
   final routerAuth = Router();
 
-  routerAuth.post("/", (Request request) async {
-    final response = serviceAuth.logIn(await request.readAsString());
+  routerAuth.post("/log-in", (Request request) async {
+    final body = await request.readAsString();
+    final params = Uri.splitQueryString(body).toString();
+
+    final response = serviceAuth.logIn(params);
 
     if (response.success) return Response.ok(response.toJsonString());
 

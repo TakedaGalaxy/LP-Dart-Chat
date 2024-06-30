@@ -8,8 +8,12 @@ Router routerUser(DatabaseConnection databaseConnection) {
 
   final routerUser = Router();
 
-  routerUser.post("/", (Request request) async {
-    final response = await serviceUser.create(await request.readAsString());
+  routerUser.post("/sign-in", (Request request) async {
+    final body = await request.readAsString();
+    final params = Uri.splitQueryString(body);
+
+    final response =
+        await serviceUser.create(params["name"]!, params["password"]!);
 
     if (response.success) return Response.ok(response.toJsonString());
 
