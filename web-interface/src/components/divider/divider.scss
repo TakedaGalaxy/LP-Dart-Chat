@@ -1,0 +1,9 @@
+element-divider {
+  hr {
+    margin: 15px 0;
+
+    &.transparent {
+      opacity: 0;
+    }
+  }
+}

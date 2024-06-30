@@ -15,4 +15,6 @@ router.addPage("chat", new PageChat({}));
 
 app.appendChild(router);
 
+router.setPage("sign-in");
+
 export { router };

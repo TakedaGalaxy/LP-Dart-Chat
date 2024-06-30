@@ -8,4 +8,4 @@ export default class PageChat extends HTMLElement {
   }
 }
 
-customElements.define("page-Chat", PageChat);
+customElements.define("page-chat", PageChat);
