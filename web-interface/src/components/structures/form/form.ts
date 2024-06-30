@@ -1,3 +1,5 @@
+import "./form.scss"
+
 export type PropsStructureForm<T> = {
   childrens: Array<HTMLElement>;
   inputsName: Array<keyof T>;

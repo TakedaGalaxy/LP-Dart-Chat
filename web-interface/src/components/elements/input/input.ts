@@ -1,3 +1,5 @@
+import "./input.scss"
+
 export type PropsElementInput = {
   type: "text" | "password";
   name: string;

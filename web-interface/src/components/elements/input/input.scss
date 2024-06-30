@@ -1,0 +1,17 @@
+element-input{
+  display: flex;
+  flex-direction: column;
+  
+  span{
+    font-size: 18px;
+  }
+
+  input{
+    height: 40px;
+    padding: 0 15px;
+    margin: 0 0 15px 0;
+    width: calc(100% - 30px);
+    border-radius: 5px;
+    font-size: 18px;
+  }
+}

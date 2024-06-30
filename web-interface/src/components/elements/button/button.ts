@@ -1,6 +1,9 @@
+import "./button.scss";
+
 export type PropsElementButton = {
   type: "submit" | "primary" | "secondary";
   text?: string;
+  onClick?: () => void;
 };
 
 export default class ElementButton extends HTMLElement {
@@ -26,6 +29,9 @@ export default class ElementButton extends HTMLElement {
       span.innerHTML = props.text;
       button.appendChild(span);
     }
+
+    if (props.onClick !== undefined)
+      button.addEventListener("click", props.onClick);
 
     this.appendChild(button);
   }
