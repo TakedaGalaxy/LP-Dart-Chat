@@ -23,11 +23,8 @@ void main() async {
       (Request request) async =>
           await getFile("public/index.html", "text/html"));
 
-  routerMain.get("/style.css",
-      (Request request) async => await getFile("public/style.css", "text/css"));
-
   routerMain.get("/main.js",
-      (Request request) async => await getFile("public/main.js", "text/js"));
+      (Request request) async => await getFile("public/main.js", "text/javascript"));
 
   // ### Adicionando rotas ###
 
@@ -40,7 +37,7 @@ void main() async {
       .addMiddleware(logRequests())
       .addHandler(routerMain.call);
 
-  final server = await shelf_io.serve(handler, 'localhost', 8080);
+  final server = await shelf_io.serve(handler, 'localhost', 80);
 
   print('Servidor rodando em http://${server.address.host}:${server.port}');
   // ### END ###
