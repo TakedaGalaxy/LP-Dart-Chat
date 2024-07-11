@@ -8,14 +8,12 @@ export class Api {
   }
 
   async signIn(name: string, password: string): Promise<string> {
-    const data = new FormData();
-
-    data.set("name", name);
-    data.set("password", password);
-
-    const response = await fetch(`http${this.isHttps && "s"}:${this.url}/api/user`, {
+    const response = await fetch(`http${this.isHttps ? "s" : ""}://${this.url}/api/user`, {
       method: "POST",
-      body: data
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({ name, password })
     });
 
     if (!response.ok)
@@ -25,6 +23,6 @@ export class Api {
   }
 }
 
-const api = new Api("localhost:8080", false);
+const api = new Api("localhost:80", false);
 
 export default api;

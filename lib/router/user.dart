@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:backend/database/database.dart';
@@ -8,12 +10,11 @@ Router routerUser(DatabaseConnection databaseConnection) {
 
   final routerUser = Router();
 
-  routerUser.post("/sign-in", (Request request) async {
+  // Sign In
+  routerUser.post("/", (Request request) async {
     final body = await request.readAsString();
-    final params = Uri.splitQueryString(body);
 
-    final response =
-        await serviceUser.create(params["name"]!, params["password"]!);
+    final response = await serviceUser.createFromJson(body);
 
     if (response.success) return Response.ok(response.toJsonString());
 

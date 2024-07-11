@@ -14,6 +14,15 @@ export default class ElementInput extends HTMLElement {
 
     input.name = props.name;
 
+    switch (props.type) {
+      case "text":
+        input.type = "text";
+        break;
+      case "password":
+        input.type = "password";
+        break;
+    }
+
     if (props.label !== undefined) {
       const span = document.createElement("span");
       span.innerHTML = props.label;

@@ -9,17 +9,18 @@ Router routerAuth(DatabaseConnection databaseConnection) {
 
   final routerAuth = Router();
 
-  routerAuth.post("/log-in", (Request request) async {
+  // Log In
+  routerAuth.post("/", (Request request) async {
     final body = await request.readAsString();
-    final params = Uri.splitQueryString(body).toString();
 
-    final response = serviceAuth.logIn(params);
+    final response = serviceAuth.logIn(body);
 
     if (response.success) return Response.ok(response.toJsonString());
 
     return Response.internalServerError(body: response.toJsonString());
   });
 
+  // Log Out
   routerAuth.delete(
       "/",
       middlewareAuth(databaseConnection)((Request request) async {

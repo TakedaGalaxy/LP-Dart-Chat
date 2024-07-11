@@ -1,3 +1,4 @@
+import api from "../../../api/api";
 import { router } from "../../../main";
 import ElementDivider from "../../divider/divider";
 import ElementButton from "../../elements/button/button";
@@ -28,7 +29,13 @@ export default class PageSignIn extends HTMLElement {
                 new StructureForm<FormSigin>({
                   inputsName: ["name", "password"],
                   onSubmit: async (data) => {
-                    console.log(data);
+                    const name = data.get("name");
+                    const password = data.get("password");
+
+                    const result = await api.signIn(name, password);
+
+                    console.log(result);
+
                     return "ok";
                   },
                   childrens: [

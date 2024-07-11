@@ -28,12 +28,12 @@ void main() async {
 
   // ### Adicionando rotas ###
 
-  routerMain.mount("/user", routerUser(databaseConnection).call);
-  routerMain.mount("/auth", routerAuth(databaseConnection).call);
-  routerMain.mount("/websocket", routerWebsocket().call);
+  routerMain.mount("/api/user", routerUser(databaseConnection).call);
+  routerMain.mount("/api/auth", routerAuth(databaseConnection).call);
+  routerMain.mount("/api/websocket", routerWebsocket().call);
 
   final handler = const Pipeline()
-      .addMiddleware(middlewareCors())
+      //.addMiddleware(middlewareCors())
       .addMiddleware(logRequests())
       .addHandler(routerMain.call);
 

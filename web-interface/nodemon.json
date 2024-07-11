@@ -1,0 +1,9 @@
+{
+  "watch": ["src", "config"],
+  "ext": "ts,json",
+  "ignore": ["node_modules/**", "logs/**"],
+  "exec": "npm run build",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
