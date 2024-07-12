@@ -3,7 +3,6 @@ import 'package:backend/utils/utils.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
-import 'package:backend/middleware/cors.dart';
 import 'package:backend/router/auth.dart';
 import 'package:backend/router/user.dart';
 import 'package:backend/router/websocket.dart';

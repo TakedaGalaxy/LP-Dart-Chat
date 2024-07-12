@@ -35,7 +35,7 @@ export default class StructureForm<T> extends HTMLElement {
           success: true
         }));
 
-        console.log(response);
+        console.log("FORM", response);
 
         if (props.onSuccess !== undefined) props.onSuccess();
 

@@ -11,9 +11,11 @@ if (app === null) throw "App not found !";
 const notification = new ElementNotification({});
 const router = new StructureRouter({});
 
-router.addPage("sign-in", new PageSignIn({}));
-router.addPage("log-in", new PageLogIn({}));
-router.addPage("chat", new PageChat({}));
+const pageChat = new PageChat({});
+
+router.addPage("sign-in", new PageSignIn({}), () => { });
+router.addPage("log-in", new PageLogIn({}), () => { });
+router.addPage("chat", pageChat, pageChat.onLoad);
 
 app.appendChild(notification);
 app.appendChild(router);

@@ -33,7 +33,7 @@ export default class PageSignIn extends HTMLElement {
                     const password = data.get("password");
 
                     const result = await api.signIn(name, password);
-
+                    
                     return result;
                   },
                   onSuccess: () => {
