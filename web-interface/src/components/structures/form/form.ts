@@ -1,9 +1,12 @@
+import { notification } from "../../../main";
+import ElementCardMessage from "../../elements/card-message/card-message";
 import "./form.scss"
 
 export type PropsStructureForm<T> = {
   childrens: Array<HTMLElement>;
   inputsName: Array<keyof T>;
   onSubmit: (data: Map<keyof T, any>) => Promise<string>;
+  onSuccess?: () => void;
 };
 
 export default class StructureForm<T> extends HTMLElement {
@@ -26,8 +29,22 @@ export default class StructureForm<T> extends HTMLElement {
 
       try {
         const response = await props.onSubmit(data);
+
+        notification.add(new ElementCardMessage({
+          text: response,
+          success: true
+        }));
+
         console.log(response);
+
+        if (props.onSuccess !== undefined) props.onSuccess();
+
       } catch (e) {
+        notification.add(new ElementCardMessage({
+          text: `${e}`,
+          error: true
+        }));
+
         console.error(e);
       }
     });

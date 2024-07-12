@@ -34,9 +34,10 @@ export default class PageSignIn extends HTMLElement {
 
                     const result = await api.signIn(name, password);
 
-                    console.log(result);
-
-                    return "ok";
+                    return result;
+                  },
+                  onSuccess: () => {
+                    router.setPage("log-in");
                   },
                   childrens: [
                     new ElementTitle({
@@ -57,12 +58,12 @@ export default class PageSignIn extends HTMLElement {
                     new ElementDivider({
                       transparent: true,
                     }),
+                    new ElementButton({ text: "Criar", type: "submit" }),
                     new ElementButton({
                       text: "Já tenho conta",
-                      type: "submit",
+                      type: "primary",
                       onClick: () => router.setPage("log-in"),
                     }),
-                    new ElementButton({ text: "Criar", type: "submit" }),
                   ],
                 }),
               ],
