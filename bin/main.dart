@@ -29,7 +29,7 @@ void main() async {
 
   routerMain.mount("/api/user", routerUser(databaseConnection).call);
   routerMain.mount("/api/auth", routerAuth(databaseConnection).call);
-  routerMain.mount("/api/websocket", routerWebsocket().call);
+  routerMain.mount("/api/websocket", routerWebsocket(databaseConnection).call);
 
   final handler = const Pipeline()
       //.addMiddleware(middlewareCors())

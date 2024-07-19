@@ -15,11 +15,11 @@ const pageChat = new PageChat({});
 
 router.addPage("sign-in", new PageSignIn({}), () => { });
 router.addPage("log-in", new PageLogIn({}), () => { });
-router.addPage("chat", pageChat, pageChat.onLoad);
+router.addPage("chat", pageChat, () => pageChat.onLoad());
 
 app.appendChild(notification);
 app.appendChild(router);
 
-router.setPage("sign-in");
+router.setPage("log-in");
 
 export { notification, router };
