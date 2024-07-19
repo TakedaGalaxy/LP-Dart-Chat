@@ -10,20 +10,22 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 Router routerWebsocket(DatabaseConnection databaseConnection) {
   final activeConnections = <WebSocketChannel>[];
+  final activeUsers = <String>[];
 
   final routerUser = Router();
 
   routerUser.mount("/chat", (Request request) {
-    // Se não for HTTP, passa para o tratamento de WebSocket
     return webSocketHandler((WebSocketChannel webSocket) {
+      String userName = "";
       bool authenticate = false;
 
       webSocket.stream.listen((message) {
         try {
-          final data = JsonDecoder().convert(message);
+          final jsonMessage = JsonDecoder().convert(message);
 
-          final token = data["accessToken"];
-          final userMessage = data["message"];
+          final token = jsonMessage["accessToken"];
+          final command = jsonMessage["command"];
+          final data = jsonMessage["data"];
 
           try {
             final payload = decodeAccessToken(token);
@@ -39,16 +41,41 @@ Router routerWebsocket(DatabaseConnection databaseConnection) {
 
             if (!authenticate) {
               authenticate = true;
+              userName = payload.userName;
+              activeUsers.add(userName);
               activeConnections.add(webSocket);
             }
 
-            if (userMessage == null) return;
+            switch (command) {
+              case "message":
+                for (var connection in activeConnections) {
+                  connection.sink.add(
+                      '{"command":"message","data": {"userName":"$userName","message" : "$data"}}');
+                }
+                break;
 
-            final userName = payload.userName;
+              case "userInput":
+                for (var connection in activeConnections) {
+                  connection.sink.add(
+                      '{"command":"userInput","data": {"userName":"$userName","input" : "$data"}}');
+                }
+                break;
 
-            for (var connection in activeConnections) {
-              connection.sink
-                  .add('{"user": "$userName", "message" : "$userMessage"}');
+              case "usersOnline":
+                final activeUserString = jsonEncode(activeUsers);
+                webSocket.sink.add('{"command": "usersOnline", "data": $activeUserString}');
+                break;
+
+              case "img":
+                break;
+
+              case "logIn":
+                print("[$userName] Online");
+                break;
+
+              default:
+                print("Comand Not Found !");
+                break;
             }
           } catch (error) {
             print(error);
@@ -64,6 +91,12 @@ Router routerWebsocket(DatabaseConnection databaseConnection) {
       }, onDone: () {
         // Remover a conexão da lista quando for fechada
         activeConnections.remove(webSocket);
+        activeUsers.remove(userName);
+
+        for (var connection in activeConnections) {
+          connection.sink
+              .add('{"command":"logOut","data": {"userName":"$userName"}}');
+        }
       });
     })(request);
   });
