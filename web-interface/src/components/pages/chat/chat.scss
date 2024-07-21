@@ -1,13 +1,4 @@
 page-chat {
-  #Container-Chat {
-    border: solid black 1px;
-    border-radius: 5px;
-    width: 500px;
-    height: 500px;
-    overflow-y: scroll;
-
-    img{
-      max-width: 80%;
-    }
-  }
+  padding-top: 100px;
+  display: block;
 }

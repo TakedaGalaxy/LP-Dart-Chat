@@ -2,10 +2,10 @@ import "./chat.scss";
 import { router } from "../../../main";
 import StructureContainer from "../../structures/container/container";
 import ChatConnection from "../../../api/websocket";
-import { fileToStringBase64 } from "../../../utils/functions";
 import ElementChatBox from "../../elements/chat-box/chat-box";
-import StructureCenterDisplay from "../../structures/center-display/center-display";
 import ElementUserBarInput from "../../elements/user-bar-input/user-bar-input";
+import ElementUsersOnline from "../../elements/users-online/users-online";
+import ElementTitle from "../../elements/title/title";
 
 export type PropsPageChat = {};
 
@@ -17,6 +17,9 @@ export default class PageChat extends HTMLElement {
     super();
 
     this.chatConnection = new ChatConnection("wss://localhost/api/websocket/chat");
+    this.chatConnection.callbackOnClose = () => {
+      router.setPage("log-in");
+    }
 
     const elementChatBox = new ElementChatBox({});
 
@@ -36,52 +39,23 @@ export default class PageChat extends HTMLElement {
       }
     });
 
-    const containerUsersOnline = document.createElement("div");
-    const createUser = (userName: string) => {
-      if (containerUsersOnline.querySelector(`#User${userName}`) != null) return;
+    const elementUsersOnline = new ElementUsersOnline({});
 
-      const name = document.createElement("h3");
-      name.innerText = userName;
-
-      const input = document.createElement("p");
-      input.id = `User${userName}`;
-
-      const userCard = document.createElement("div");
-      userCard.id = `UserCard${userName}`
-      userCard.append(name);
-      userCard.append(input);
-
-      containerUsersOnline.append(userCard);
-    }
-
-    const removeUser = (userName: string) => {
-      const element = containerUsersOnline.querySelector(`#UserCard${userName}`);
-      if (element == null) return;
-      element.remove();
-    }
-
-    const updateUserInput = (userName: string, input: string) => {
-      const element = containerUsersOnline.querySelector(`#User${userName}`);
-      if (input == null) return;
-      element.innerHTML = input;
-    }
-
-    this.chatConnection.callbackOnLogIn = createUser;
-    this.chatConnection.callbackOnUsersOnline = (users) => users.forEach(createUser);
-    this.chatConnection.callbackOnLogOut = removeUser
-    this.chatConnection.callbackOnUserInput = updateUserInput;
+    this.chatConnection.callbackOnLogIn = (userName) => elementUsersOnline.addUser(userName);
+    this.chatConnection.callbackOnUsersOnline = (users) => users.forEach((userName) => elementUsersOnline.addUser(userName));
+    this.chatConnection.callbackOnLogOut = (userName) => elementUsersOnline.removeUser(userName);
+    this.chatConnection.callbackOnUserInput = (userName, input) => elementUsersOnline.updateUserInput(userName, input);;
 
     this.appendChild(
-      new StructureCenterDisplay({
-        children:
-          new StructureContainer({
-            align: "center",
-            childrens: [
-              elementChatBox,
-              elementUserBarInput,
-              containerUsersOnline
-            ]
-          })
+      new StructureContainer({
+        align: "center",
+        childrens: [
+          new ElementTitle({ align: "center", level: "h1", text: "Dart Chat" }),
+          elementChatBox,
+          elementUserBarInput,
+          new ElementTitle({ align: "center", level: "h2", text: "Usuarios Online" }),
+          elementUsersOnline,
+        ]
       })
     );
   }
