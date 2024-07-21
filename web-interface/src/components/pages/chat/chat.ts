@@ -1,154 +1,12 @@
 import "./chat.scss";
 import { router } from "../../../main";
-import StructureCenterDisplay from "../../structures/center-display/center-display";
 import StructureContainer from "../../structures/container/container";
+import ChatConnection from "../../../api/websocket";
+import { fileToStringBase64 } from "../../../utils/functions";
+import ElementChatBox from "../../elements/chat-box/chat-box";
+import StructureCenterDisplay from "../../structures/center-display/center-display";
 
 export type PropsPageChat = {};
-
-function fileToStringBase64(arquivo: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve(reader.result as string);
-    };
-    reader.onerror = () => {
-      reject(reader.error);
-    };
-    reader.readAsDataURL(arquivo); // Base64
-  });
-}
-
-function stringbase64ToFile(stringBase64: string): File {
-  const [header, base64] = stringBase64.split(',');
-  const mimeMatch = header.match(/data:([^;]+);base64/);
-  const mimeType = mimeMatch ? mimeMatch[1] : '';
-  const byteCharacters = atob(base64);
-  const byteNumbers = new Array(byteCharacters.length);
-
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-
-  const byteArray = new Uint8Array(byteNumbers);
-  const fileName = `download.${mimeType.split('/')[1]}`; // Usa a extensão do tipo MIME para o nome do arquivo
-  return new File([byteArray], fileName, { type: mimeType });
-}
-
-class ChatConnection {
-  private readonly url: string;
-
-  callbackOnMessage: (userName: string, message: String) => void = (_, __) => { };
-  callbackOnUserInput: (userName: string, input: String) => void = (_, __) => { };
-  callbackOnUsersOnline: (users: Array<string>) => void = (_) => { };
-  callbackOnLogIn: (userName: string) => void = (_) => { };
-  callbackOnLogOut: (userName: string) => void = (_) => { };
-  callbackOnFile: (userName: string, file: string) => void = () => { };
-  callbackOnClose: () => void = () => { };
-
-  private sendData?: (data: Object) => void;
-
-  constructor(url: string) {
-    this.url = url;
-  }
-
-  connect(accessToken: string) {
-    const socket = new WebSocket(this.url);
-
-    socket.addEventListener('open', (event) => {
-      this.sendData = (data: Object) => {
-        socket.send(JSON.stringify({ accessToken, ...data }));
-      }
-
-      this.sendData({ command: "logIn" });
-      this.sendData({ command: "usersOnline" });
-    });
-
-    socket.addEventListener('message', (event) => {
-      const { command, data } = JSON.parse(event.data);
-
-      switch (command) {
-        case "message":
-          (() => {
-            const { userName, message } = data;
-            this.callbackOnMessage(userName, message);
-          })()
-          break;
-
-        case "usersOnline":
-          (() => {
-            this.callbackOnUsersOnline(data);
-          })();
-          break;
-
-        case "logIn":
-          (() => {
-            const { userName } = data;
-            this.callbackOnLogIn(userName);
-          })()
-          break;
-
-        case "userInput":
-          (() => {
-            const { userName, input } = data;
-            this.callbackOnUserInput(userName, input);
-          })()
-          break;
-
-        case "logOut":
-          (() => {
-            const { userName } = data;
-            this.callbackOnLogOut(userName);
-          })()
-          break;
-
-        case "file":
-          (() => {
-            const { userName, file } = data;
-
-            this.callbackOnFile(userName, file);
-          })();
-
-        default:
-      }
-    });
-
-    socket.addEventListener('close', (event) => {
-      this.sendData = undefined;
-      this.callbackOnClose();
-    });
-  }
-
-  disconnect() { }
-
-  sendMessage(message: string) {
-    if (this.sendData === undefined) return;
-
-    this.sendData({
-      command: "message",
-      data: message
-    });
-  }
-
-  sendUserInput(input: string) {
-    if (this.sendData === undefined) return;
-
-    this.sendData({
-      command: "userInput",
-      data: input
-    })
-  }
-
-  sendFile(file: File) {
-    if (this.sendData === undefined) return;
-
-    fileToStringBase64(file)
-      .then((data) => {
-        this.sendData({ command: "file", data });
-      })
-      .catch((error) => console.error(error))
-  }
-}
-
 
 export default class PageChat extends HTMLElement {
 
@@ -159,41 +17,10 @@ export default class PageChat extends HTMLElement {
 
     this.chatConnection = new ChatConnection("wss://localhost/api/websocket/chat");
 
+    const elementChatBox = new ElementChatBox({});
 
-    const containerChat = document.createElement("div");
-    containerChat.id = "Container-Chat"
-
-    const observer = new MutationObserver(() => {
-      containerChat.scrollTop = containerChat.scrollHeight;
-    });
-
-    observer.observe(containerChat, { childList: true });
-
-    this.chatConnection.callbackOnMessage = (userName, message) => {
-      const p = document.createElement("p");
-
-      p.innerText = `${userName} : ${message}`
-
-      containerChat.appendChild(p);
-      return;
-    };
-    this.chatConnection.callbackOnFile = (userName, stringFile) => {
-      const file = stringbase64ToFile(stringFile);
-
-      if (file.type.startsWith("image/")) {
-        const p = document.createElement("p");
-        p.innerText = userName;
-
-        const img = document.createElement("img");
-        img.src = stringFile;
-
-        const containerImg = document.createElement("div");
-        containerImg.append(p);
-        containerImg.append(img);
-
-        containerChat.append(containerImg);
-      }
-    }
+    this.chatConnection.callbackOnMessage = (userName, message) => elementChatBox.addMessage(userName, message);
+    this.chatConnection.callbackOnFile = (userName, file) => { elementChatBox.addImg(userName, file) };
 
     const inputText = document.createElement("input");
     inputText.addEventListener("input", (event) => {
@@ -272,13 +99,16 @@ export default class PageChat extends HTMLElement {
     this.chatConnection.callbackOnUserInput = updateUserInput;
 
     this.appendChild(
-      new StructureContainer({
-        align: "center",
-        childrens: [
-          containerChat,
-          containerInput,
-          containerUsersOnline
-        ]
+      new StructureCenterDisplay({
+        children:
+          new StructureContainer({
+            align: "center",
+            childrens: [
+              elementChatBox,
+              containerInput,
+              containerUsersOnline
+            ]
+          })
       })
     );
   }
