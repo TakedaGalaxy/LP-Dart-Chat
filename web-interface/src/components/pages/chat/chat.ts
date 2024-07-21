@@ -1,10 +1,38 @@
+import "./chat.scss";
 import { router } from "../../../main";
 import StructureCenterDisplay from "../../structures/center-display/center-display";
 import StructureContainer from "../../structures/container/container";
 
 export type PropsPageChat = {};
 
-type Commands = "message" | "userInput" | "usersOnline" | "img";
+function fileToStringBase64(arquivo: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = () => {
+      reject(reader.error);
+    };
+    reader.readAsDataURL(arquivo); // Base64
+  });
+}
+
+function stringbase64ToFile(stringBase64: string): File {
+  const [header, base64] = stringBase64.split(',');
+  const mimeMatch = header.match(/data:([^;]+);base64/);
+  const mimeType = mimeMatch ? mimeMatch[1] : '';
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const byteArray = new Uint8Array(byteNumbers);
+  const fileName = `download.${mimeType.split('/')[1]}`; // Usa a extensão do tipo MIME para o nome do arquivo
+  return new File([byteArray], fileName, { type: mimeType });
+}
 
 class ChatConnection {
   private readonly url: string;
@@ -14,7 +42,7 @@ class ChatConnection {
   callbackOnUsersOnline: (users: Array<string>) => void = (_) => { };
   callbackOnLogIn: (userName: string) => void = (_) => { };
   callbackOnLogOut: (userName: string) => void = (_) => { };
-  //callbackOnImg: (userName: string, img: File) => {};
+  callbackOnFile: (userName: string, file: string) => void = () => { };
   callbackOnClose: () => void = () => { };
 
   private sendData?: (data: Object) => void;
@@ -73,6 +101,13 @@ class ChatConnection {
           })()
           break;
 
+        case "file":
+          (() => {
+            const { userName, file } = data;
+
+            this.callbackOnFile(userName, file);
+          })();
+
         default:
       }
     });
@@ -103,9 +138,14 @@ class ChatConnection {
     })
   }
 
-  sendImg() {
+  sendFile(file: File) {
     if (this.sendData === undefined) return;
 
+    fileToStringBase64(file)
+      .then((data) => {
+        this.sendData({ command: "file", data });
+      })
+      .catch((error) => console.error(error))
   }
 }
 
@@ -121,6 +161,14 @@ export default class PageChat extends HTMLElement {
 
 
     const containerChat = document.createElement("div");
+    containerChat.id = "Container-Chat"
+
+    const observer = new MutationObserver(() => {
+      containerChat.scrollTop = containerChat.scrollHeight;
+    });
+
+    observer.observe(containerChat, { childList: true });
+
     this.chatConnection.callbackOnMessage = (userName, message) => {
       const p = document.createElement("p");
 
@@ -129,6 +177,23 @@ export default class PageChat extends HTMLElement {
       containerChat.appendChild(p);
       return;
     };
+    this.chatConnection.callbackOnFile = (userName, stringFile) => {
+      const file = stringbase64ToFile(stringFile);
+
+      if (file.type.startsWith("image/")) {
+        const p = document.createElement("p");
+        p.innerText = userName;
+
+        const img = document.createElement("img");
+        img.src = stringFile;
+
+        const containerImg = document.createElement("div");
+        containerImg.append(p);
+        containerImg.append(img);
+
+        containerChat.append(containerImg);
+      }
+    }
 
     const inputText = document.createElement("input");
     inputText.addEventListener("input", (event) => {
@@ -149,9 +214,27 @@ export default class PageChat extends HTMLElement {
       this.chatConnection.sendMessage(value);
     });
 
+    const buttonSendFile = document.createElement("button");
+    buttonSendFile.innerText = "Enviar Imagem";
+    buttonSendFile.addEventListener("click", () => {
+      const inputImg = document.createElement("input");
+      inputImg.type = 'file';
+      inputImg.accept = 'image/*';
+
+      inputImg.addEventListener('change', (event) => {
+        const arquivo = inputImg.files ? inputImg.files[0] : null;
+        if (arquivo)
+          this.chatConnection.sendFile(arquivo);
+      });
+
+      //document.body.appendChild(inputImagem);
+      inputImg.click();
+    });
+
     const containerInput = document.createElement("div");
     containerInput.appendChild(inputText);
     containerInput.appendChild(buttonSend);
+    containerInput.appendChild(buttonSendFile);
 
     const containerUsersOnline = document.createElement("div");
     const createUser = (userName: string) => {
@@ -188,8 +271,8 @@ export default class PageChat extends HTMLElement {
     this.chatConnection.callbackOnLogOut = removeUser
     this.chatConnection.callbackOnUserInput = updateUserInput;
 
-    this.appendChild(new StructureCenterDisplay({
-      children: new StructureContainer({
+    this.appendChild(
+      new StructureContainer({
         align: "center",
         childrens: [
           containerChat,
@@ -197,7 +280,7 @@ export default class PageChat extends HTMLElement {
           containerUsersOnline
         ]
       })
-    }));
+    );
   }
 
   onLoad() {

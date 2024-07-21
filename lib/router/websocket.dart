@@ -151,7 +151,16 @@ Router routerWebsocket(DatabaseConnection databaseConnection) {
             }));
             break;
 
-          case "img":
+          case "file":
+            listUserConnection.sendBroadCast(
+                jsonEncode({
+                  "command": "file",
+                  "data": {
+                    "userName": connection!.getUserName(),
+                    "file": data
+                  }
+                }),
+                null);
             break;
 
           default:
