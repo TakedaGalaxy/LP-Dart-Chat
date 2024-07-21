@@ -144,10 +144,11 @@ Router routerWebsocket(DatabaseConnection databaseConnection) {
             break;
 
           case "usersOnline":
-            final listOnlineUsers = jsonEncode(listUserConnection
-                .getListUsersOnline(connection!.getUserName()));
-
-            connection!.sendMessage(listOnlineUsers);
+            connection!.sendMessage(jsonEncode({
+              "command": "usersOnline",
+              "data": listUserConnection
+                  .getListUsersOnline(connection!.getUserName())
+            }));
             break;
 
           case "img":
