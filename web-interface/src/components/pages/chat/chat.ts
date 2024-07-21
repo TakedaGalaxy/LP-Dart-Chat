@@ -157,7 +157,7 @@ export default class PageChat extends HTMLElement {
   constructor(props: PropsPageChat) {
     super();
 
-    this.chatConnection = new ChatConnection("ws://localhost:80/api/websocket/chat");
+    this.chatConnection = new ChatConnection("wss://localhost/api/websocket/chat");
 
 
     const containerChat = document.createElement("div");

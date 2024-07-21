@@ -38,6 +38,6 @@ export class Api {
   }
 }
 
-const api = new Api("localhost:80", false);
+const api = new Api("localhost", true);
 
 export default api;
