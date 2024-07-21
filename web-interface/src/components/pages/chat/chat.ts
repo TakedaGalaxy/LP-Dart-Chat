@@ -69,8 +69,10 @@ export default class PageChat extends HTMLElement {
 
       console.log("Enviando", value);
 
-      if (this.sendCommand !== undefined)
+      if (this.sendCommand !== undefined) {
         this.sendCommand("message", value);
+        this.sendCommand("userInput", "");
+      }
     })
 
     inputText.addEventListener("input", (event) => {
@@ -130,7 +132,6 @@ export default class PageChat extends HTMLElement {
             (() => {
               const { userName, message } = data;
               this.addMessage(userName, message);
-
             })()
             break;
 
@@ -138,6 +139,10 @@ export default class PageChat extends HTMLElement {
             (data as Array<string>).forEach((user) => { this.addUser(user) });
             break;
 
+          case "logIn":
+            const {userName} = data;
+            this.addUser(userName);
+            break;
           case "userInput":
             (() => {
               const { userName, input } = data;

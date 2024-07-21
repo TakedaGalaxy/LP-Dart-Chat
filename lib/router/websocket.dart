@@ -8,94 +8,167 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-Router routerWebsocket(DatabaseConnection databaseConnection) {
-  final activeConnections = <WebSocketChannel>[];
-  final activeUsers = <String>[];
+class UserConection {
+  final String _userName;
+  final WebSocketChannel _webSocketChannel;
 
+  UserConection(this._userName, this._webSocketChannel);
+
+  String getUserName() {
+    return _userName;
+  }
+
+  void sendMessage(String message) {
+    _webSocketChannel.sink.add(message);
+  }
+}
+
+class ListUserConnection {
+  final List<UserConection> _connections = [];
+
+  ListUserConnection();
+
+  void add(UserConection connection) {
+    _connections.add(connection);
+  }
+
+  void remove(UserConection connection) {
+    _connections.remove(connection);
+  }
+
+  void sendBroadCast(String message, String? excludeUserName) {
+    for (var connection in _connections) {
+      if (excludeUserName != null &&
+          connection.getUserName() == excludeUserName) {
+        continue;
+      }
+
+      connection.sendMessage(message);
+    }
+  }
+
+  List<String> getListUsersOnline(String? excludeUserName) {
+    final returnValue = <String>[];
+
+    for (var conneciton in _connections) {
+      String userName = conneciton.getUserName();
+
+      if (excludeUserName != null && userName == excludeUserName) {
+        continue;
+      }
+
+      returnValue.add(userName);
+    }
+
+    return returnValue;
+  }
+}
+
+Router routerWebsocket(DatabaseConnection databaseConnection) {
   final routerUser = Router();
+
+  final listUserConnection = ListUserConnection();
 
   routerUser.mount("/chat", (Request request) {
     return webSocketHandler((WebSocketChannel webSocket) {
-      String userName = "";
-      bool authenticate = false;
+      UserConection? connection;
 
       webSocket.stream.listen((message) {
+        String? token = "";
+        String? command = "";
+        String? data = "";
+
+        PayloadAccessToken? payload;
+
         try {
+          // Extraindo dados da mensagem
+
           final jsonMessage = JsonDecoder().convert(message);
+          token = jsonMessage["accessToken"];
+          command = jsonMessage["command"];
+          data = jsonMessage["data"];
 
-          final token = jsonMessage["accessToken"];
-          final command = jsonMessage["command"];
-          final data = jsonMessage["data"];
+          // Verificando token
 
-          try {
-            final payload = decodeAccessToken(token);
+          payload = decodeAccessToken(token!);
 
-            final userTokent =
-                databaseConnection.getUserTokenById(payload.tokenId);
+          final userTokent =
+              databaseConnection.getUserTokenById(payload.tokenId);
 
-            if (userTokent.revoke == 1) {
-              throw ServiceResponseMessage(
-                      success: false, message: "Token revogado")
-                  .toJsonString();
-            }
-
-            if (!authenticate) {
-              authenticate = true;
-              userName = payload.userName;
-              activeUsers.add(userName);
-              activeConnections.add(webSocket);
-            }
-
-            switch (command) {
-              case "message":
-                for (var connection in activeConnections) {
-                  connection.sink.add(
-                      '{"command":"message","data": {"userName":"$userName","message" : "$data"}}');
-                }
-                break;
-
-              case "userInput":
-                for (var connection in activeConnections) {
-                  connection.sink.add(
-                      '{"command":"userInput","data": {"userName":"$userName","input" : "$data"}}');
-                }
-                break;
-
-              case "usersOnline":
-                final activeUserString = jsonEncode(activeUsers);
-                webSocket.sink.add('{"command": "usersOnline", "data": $activeUserString}');
-                break;
-
-              case "img":
-                break;
-
-              case "logIn":
-                print("[$userName] Online");
-                break;
-
-              default:
-                print("Comand Not Found !");
-                break;
-            }
-          } catch (error) {
-            print(error);
-            webSocket.sink.close(
-                500,
-                ServiceResponseMessage(
-                        success: false, message: "Error MiddlewareAuth $error")
-                    .toJsonString());
+          if (userTokent.revoke == 1) {
+            throw ServiceResponseMessage(
+                    success: false, message: "Token revogado")
+                .toJsonString();
           }
-        } catch (_) {
-          webSocket.sink.close(500, "Not authenticate !");
+
+          // Adicionadno a conexão como valída e enviando que novo usuario conectou
+
+          if (connection == null) {
+            connection = UserConection(payload.userName, webSocket);
+            listUserConnection.sendBroadCast(
+                jsonEncode({
+                  "command": "logIn",
+                  "data": {"userName": connection?.getUserName()}
+                }),
+                null);
+            listUserConnection.add(connection!);
+            print("[${connection?.getUserName()}] Online");
+            return;
+          }
+        } catch (error) {
+          print(error);
+          webSocket.sink.close();
+          return;
+        }
+
+        switch (command) {
+          case "message":
+            listUserConnection.sendBroadCast(
+                jsonEncode({
+                  "command": "message",
+                  "data": {
+                    "userName": connection!.getUserName(),
+                    "message": data
+                  }
+                }),
+                null);
+            break;
+
+          case "userInput":
+            listUserConnection.sendBroadCast(
+                jsonEncode({
+                  "command": "userInput",
+                  "data": {"userName": connection!.getUserName(), "input": data}
+                }),
+                connection!.getUserName());
+            break;
+
+          case "usersOnline":
+            final listOnlineUsers = jsonEncode(listUserConnection
+                .getListUsersOnline(connection!.getUserName()));
+
+            connection!.sendMessage(listOnlineUsers);
+            break;
+
+          case "img":
+            break;
+
+          default:
+            print("Comand Not Found !");
+            break;
         }
       }, onDone: () {
-        // Remover a conexão da lista quando for fechada
-        activeConnections.remove(webSocket);
-        activeUsers.remove(userName);
+        if (connection != null) {
+          listUserConnection.remove(connection!);
 
-        for (var connection in activeConnections) {
-          connection.sink
-              .add('{"command":"logOut","data": {"userName":"$userName"}}');
+          listUserConnection.sendBroadCast(
+              jsonEncode({
+                "command": "logOut",
+                "data": {"userName": connection!.getUserName()}
+              }),
+              null);
+
+          print("[${connection!.getUserName()}] Offline");
         }
       });
     })(request);
