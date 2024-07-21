@@ -31,7 +31,7 @@ export default class StructureForm<T> extends HTMLElement {
         const response = await props.onSubmit(data);
 
         notification.add(new ElementCardMessage({
-          text: response,
+          text: "Sucesso !",
           success: true
         }));
 
@@ -41,7 +41,7 @@ export default class StructureForm<T> extends HTMLElement {
 
       } catch (e) {
         notification.add(new ElementCardMessage({
-          text: `${e}`,
+          text: "Falha !",
           error: true
         }));
 
