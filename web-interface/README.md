@@ -1,15 +1,22 @@
-# 🚀 Welcome to your new awesome project
+# Web Interface
 
-This project has been created using **webpack-cli**, you can now run
+Interface desenvolvida utilizando Webpack, TypeScript e Sass, 
 
+### Para executar o projeto
+```sh
+dart bib/main.dart
 ```
+
+O serviço vai ficar disponível em https://localhost
+
+### Para executar com o desenvolvimento da interface web
+```sh
+cd web-interface
+npm run dev
+```
+
+### Para fazer o build da interface web
+```sh
+cd web-interface
 npm run build
 ```
-
-or
-
-```
-yarn build
-```
-
-to bundle your application
