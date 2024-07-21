@@ -5,6 +5,7 @@ import ChatConnection from "../../../api/websocket";
 import { fileToStringBase64 } from "../../../utils/functions";
 import ElementChatBox from "../../elements/chat-box/chat-box";
 import StructureCenterDisplay from "../../structures/center-display/center-display";
+import ElementUserBarInput from "../../elements/user-bar-input/user-bar-input";
 
 export type PropsPageChat = {};
 
@@ -22,46 +23,18 @@ export default class PageChat extends HTMLElement {
     this.chatConnection.callbackOnMessage = (userName, message) => elementChatBox.addMessage(userName, message);
     this.chatConnection.callbackOnFile = (userName, file) => { elementChatBox.addImg(userName, file) };
 
-    const inputText = document.createElement("input");
-    inputText.addEventListener("input", (event) => {
-      const { value } = event.target as any;
-      this.chatConnection.sendUserInput(value);
-
+    const elementUserBarInput = new ElementUserBarInput({
+      onInput: (text) => {
+        this.chatConnection.sendUserInput(text);
+      },
+      onSubmitInput: (text) => {
+        this.chatConnection.sendUserInput("");
+        this.chatConnection.sendMessage(text);
+      },
+      onSubmitFile: (file) => {
+        this.chatConnection.sendFile(file);
+      }
     });
-
-    const buttonSend = document.createElement("button");
-    buttonSend.innerHTML = "Enviar";
-    buttonSend.addEventListener("click", () => {
-      const { value } = inputText;
-
-      if (value === undefined || value === "") return;
-
-      inputText.value = "";
-      this.chatConnection.sendUserInput("");
-      this.chatConnection.sendMessage(value);
-    });
-
-    const buttonSendFile = document.createElement("button");
-    buttonSendFile.innerText = "Enviar Imagem";
-    buttonSendFile.addEventListener("click", () => {
-      const inputImg = document.createElement("input");
-      inputImg.type = 'file';
-      inputImg.accept = 'image/*';
-
-      inputImg.addEventListener('change', (event) => {
-        const arquivo = inputImg.files ? inputImg.files[0] : null;
-        if (arquivo)
-          this.chatConnection.sendFile(arquivo);
-      });
-
-      //document.body.appendChild(inputImagem);
-      inputImg.click();
-    });
-
-    const containerInput = document.createElement("div");
-    containerInput.appendChild(inputText);
-    containerInput.appendChild(buttonSend);
-    containerInput.appendChild(buttonSendFile);
 
     const containerUsersOnline = document.createElement("div");
     const createUser = (userName: string) => {
@@ -105,7 +78,7 @@ export default class PageChat extends HTMLElement {
             align: "center",
             childrens: [
               elementChatBox,
-              containerInput,
+              elementUserBarInput,
               containerUsersOnline
             ]
           })

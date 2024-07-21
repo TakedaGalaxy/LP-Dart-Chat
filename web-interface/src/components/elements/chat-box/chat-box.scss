@@ -2,7 +2,7 @@ element-chat-box {
   border: dashed black .5px;
   border-radius: 5px;
   height: 600px;
-  width: 100%;
+  width: calc(100% - 60px);
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
