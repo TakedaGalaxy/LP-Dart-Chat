@@ -5,7 +5,7 @@ Este repositório contém o código-fonte e documentação de um servidor de cha
 
 ### Para executar o projeto
 ```sh
-dart bib/main.dart
+dart bin/main.dart
 ```
 
 O serviço vai ficar disponível em https://localhost
